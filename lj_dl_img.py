@@ -6,11 +6,9 @@ import random
 import re
 import sys
 import time
-from datetime import datetime
 from math import floor
 from pathlib import Path
-from time import sleep
-from typing import List, Optional
+from typing import List, Optional, Sequence
 from urllib.parse import urlparse
 
 import aiofiles
@@ -24,41 +22,52 @@ from constants import (RESPONSE_NOT_200, UAS_BACKUP, URL_API, URL_AUTH,
                        VERSION, TermColors, headers_default)
 from user_agents import Ua
 
-parser = argparse.ArgumentParser(description=
-                                '''LJDL - Script for downloading Livejournal photo albums.\n\n'''
-                                '''Usage: py ljdl.py [OPTIONS] [URL]''',
-                                formatter_class=argparse.RawTextHelpFormatter,
-                                add_help=False)
+parser = argparse.ArgumentParser(
+    description='LJDL - Script for downloading Livejournal photo albums.\n\n'
+                'Usage: py ljdl.py [OPTIONS] [URL]',
+    formatter_class=argparse.RawTextHelpFormatter,
+    add_help=False
+    )
 
-parser.add_argument('URL',
-                    type=str,
-                    help='URL of Livejournal user or certain album to download. For example, specify: \n'
-                         'https://dimarcello.livejournal.com - to download all avaliable albums.\n'
-                         'https://dimarcello.livejournal.com/photo/album/1337 - to download just one certain album.\n\n')
+parser.add_argument(
+    'URL',
+    type=str,
+    help='URL of Livejournal user or certain album to download. For example, specify: \n'
+         'https://dimarcello.livejournal.com - to download all avaliable albums.\n'
+         'https://dimarcello.livejournal.com/photo/album/1337 - to download just one certain album.\n\n'
+    )
 
-parser.add_argument('-h', '--help',
-                    action='help',
-                    default=argparse.SUPPRESS,
-                    help='Show this help message and exit.\n\n')
+parser.add_argument(
+    '-h',
+    '--help',
+    action='help',
+    default=argparse.SUPPRESS,
+    help='Show this help message and exit.\n\n'
+    )
 
-parser.add_argument('-v', '--version',
-                    action='version',
-                    version=VERSION,
-                    help='Show script version and exit.\n\n')
+parser.add_argument(
+    '-v',
+    '--version',
+    action='version',
+    version=VERSION,
+    help='Show script version and exit.\n\n'
+    )
 
-parser.add_argument('-d', '--directory',
-                    type=str,
-                    metavar='',
-                    help='Path where images should be downloaded.\n'
-                         'Note that script will create a subfolder for each downloaded album.\n'
-                         'Default: current working directory.\n\n')
+parser.add_argument(
+    '-d',
+    '--directory',
+    type=str,
+    metavar='',
+    help='Path where images should be downloaded.\n'
+         'Note that script will create a subfolder for each downloaded album.\n'
+         'Default: current working directory.\n\n'
+    )
 
-# args = parser.parse_args()
+args = parser.parse_args()
 
 progress = Progress(
     TextColumn("[progress.description]{task.description}"),
     BarColumn(),
-    # "•",
     TaskProgressColumn(),
     "•",
     MofNCompleteColumn(),
@@ -80,8 +89,9 @@ class Ljdl():
         self.url_parse = self._validate_url(url)
         self.goal_is_multiple = self._goal_is_multiple()
         self.download_path = self._set_download_path(path)
-        self.user_agent = random.choice(UAS_BACKUP)
-        # self.user_agent = Ua.random()
+        # import backup uas for testing
+        # self.user_agent = random.choice(UAS_BACKUP)
+        self.user_agent = Ua.random()
         self.username = self._get_username()
         self.cookies = None
         self.auth_token = None
@@ -103,18 +113,15 @@ class Ljdl():
                    'https://username.livejournal.com')
         try:
             url_parse = urlparse(url)
-
         except ValueError:
             self._exit(message, 1)
 
         if not all((url_parse.scheme, url_parse.netloc)):
             self._exit(message, 1)
-
         if 'livejournal.com' not in url_parse.netloc:
             self._exit('Only downloading from https://www.livejournal.com is supported.', 1)
 
         pattern = re.compile(r'^https:\/\/([a-z0-9_\-])+\.livejournal\.com')
-
         if not pattern.search(url):
             self._exit('Not a valid username, please check URL spelling.', 1)
 
@@ -145,17 +152,12 @@ class Ljdl():
         return int((self.url_parse.path).split('/')[-1])
 
 
-    def _epoch_to_datetime(self, epoch:int, strf='%Y-%m-%d_%H-%M-%S') -> str:
-        'Return human readable timedate string from given epoch.'
-        return datetime.fromtimestamp(epoch).strftime(strf)
-
-
     def _set_download_path(self, path: Optional[str] = None) -> Path:
         if not path:
             download_path = Path.cwd().resolve()
 
         else:
-            download_path = Path(download_path)
+            download_path = Path(path)
             message = ('Given path is not {reason}'
                        'Please specify different path or not specify path at all '
                        'to download to current directory.')
@@ -164,7 +166,7 @@ class Ljdl():
                 try:
                     download_path.mkdir(parents=True)
                 except Exception as e:
-                    self._exit(message.format(reason = f'created. Exception: {e}\n\n'), 1)
+                    self._exit(message.format(reason = f'created.\nException: {e}\n\n'), 1)
 
             if not download_path.is_dir():
                 self._exit(message.format(reason = 'a folder.\n'), 1)
@@ -186,9 +188,9 @@ class Ljdl():
         assert len(cookie_jar) > 0, f"{self.error_mark} Can\'t get 'luid' cookie, exiting."
 
         cookie_dict = {
-            "luid":
+            'luid':
                 f"{cookie_jar.split('=', 1)[1]}",
-            "ljuniq":
+            'ljuniq':
                 f"{json_text['ljuniq']}"
         }
 
@@ -205,7 +207,7 @@ class Ljdl():
             html = await response.text()
 
         soup = BeautifulSoup(html, features='html.parser')
-        scripts = list(soup.find_all('script', attrs={"src":None}))
+        scripts = list(soup.find_all('script', attrs={'src':None}))
 
         for element in scripts:
             if 'auth_token' in str(element):
@@ -216,7 +218,7 @@ class Ljdl():
 
         pattern = re.compile(r'{.+\"auth_token\":.+}')
         match = pattern.search(script).group()
-        auth_token = json.loads(match)["auth_token"]
+        auth_token = json.loads(match)['auth_token']
 
         return auth_token
 
@@ -269,8 +271,8 @@ class Ljdl():
             except KeyError:
                 continue
 
-        assert albums != None, f'{self.error_mark} Can\'t find "albums" \
-        key in JSON response, exiting'
+        assert albums != None, f"{self.error_mark} Can\'t find 'albums' \
+        key in JSON response, exiting."
 
         if self.goal_is_multiple:
             return albums
@@ -280,7 +282,11 @@ class Ljdl():
                     return [album]
 
 
-    async def _get_records(self, session: aiohttp.ClientSession, album_id: int, limit: int) -> list[dict]:
+    async def _get_records(
+        self,
+        session: aiohttp.ClientSession,
+        album_id: int,
+        limit: int) -> list[dict]:
         '''
         Make jsonrpc request to API to get specific album records.
         Return dict with image file names as keys and urls as values.
@@ -321,8 +327,8 @@ class Ljdl():
             except KeyError:
                 continue
 
-        assert records_json != None, f'{self.error_mark} Can\'t find "records" \
-        key in JSON response, exiting'
+        assert records_json != None, f"{self.error_mark} Can\'t find 'records' \
+        key in JSON response, exiting"
 
         records = {}
         records[album_id] = {}
@@ -361,7 +367,8 @@ class Ljdl():
             job_list = {'albums': []}
             keys_to_keep = ('count', 'timecreate', 'name', 'id')
             for album in albums:
-                # create a shallow copy to avoid "RuntimeError: dictionary changed size during iteration"
+                # create a shallow copy to avoid
+                # "RuntimeError: dictionary changed size during iteration"
                 for _key in album.copy():
                     if _key not in keys_to_keep:
                         del album[f'{_key}']
@@ -389,12 +396,19 @@ class Ljdl():
                 records_total += album['count']
 
         print(f"Found total {self.colors.OK_GREEN}{records_total}{self.colors.ENDC} "
-              f"images in {self.colors.OK_GREEN}{albums_total}{self.colors.ENDC} album{'s' if albums_total > 1 else ''}.")
+              f"images in {self.colors.OK_GREEN}{albums_total}{self.colors.ENDC} "
+              f"album{'s' if albums_total > 1 else ''}.")
 
         return job_list
 
 
-    async def _fetch_image(self, session: aiohttp.ClientSession, url: str, path: Path, task_id: TaskID, filename: str) -> None:
+    async def _fetch_image(
+        self,
+        session: aiohttp.ClientSession,
+        url: str,
+        path: Path,
+        task_id: TaskID,
+        filename: str) -> None:
         '''
         Download image from given url to specified path,
         updates progress task id with image filename.
@@ -402,13 +416,41 @@ class Ljdl():
         async with session.get(url) as response:
             assert response.status == 200, f'{self.error_mark} {RESPONSE_NOT_200}'
             data = await response.read()
-            #sleep for rich progress tweaking
-            sleep(0.2)
+            # sleep for rich progress tweaking
+            # sleep(0.2)
 
         async with aiofiles.open(path, 'wb') as file:
             await file.write(data)
-            progress.update(task_id, filename=filename)
-            progress.update(task_id, advance=1)
+
+        progress.update(task_id, filename=filename)
+        progress.update(task_id, advance=1)
+
+
+    def _get_task_filename(self, record: str, width: int = 20) -> str:
+        'Return normalized filename of the record for task progress display.'
+        assert width % 2 == 0, "'width' parameter must be even number, \
+            otherwise right display bracket will shaking."
+
+        record = record.split('__', 1)[1][:width]
+
+        if len(record) == width:
+            record = record[:-3] + '...'
+
+        indent = floor(abs(len(record) - width)/2)
+
+        if len(record) % 2 != 0:
+            cf = 1
+        else:
+            cf = 0
+
+        filename = f" {' ' * indent}{record}{' ' * (indent + cf)} "
+        return filename
+
+
+    async def _json_dump(self, fp: Path, data: Sequence):
+        'Dump any sequence `data` to json file at given path.'
+        with open(fp, 'w', encoding='UTF-8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
 
 
     async def download_images(self) -> None:
@@ -418,28 +460,14 @@ class Ljdl():
         semaphore = asyncio.BoundedSemaphore(5)
         job_list = await self._generate_job_list()
 
-        def get_task_filename(record: str, width: int = 20) -> str:
-            'Return normalized for progress display filename of the record.'
-            assert width % 2 == 0, "'width' parameter must be even number, \
-                otherwise right display bracket will shaking."
-            record = record.split('__', 1)[1][:width]
+        job_list_path = Path.joinpath(
+            Path(self.download_path),
+            Path(f"lj_{self.username}_job_list.json")
+            )
+        await self._json_dump(job_list_path, job_list)
 
-            if len(record) == width:
-                record = record[:-3] + '...'
-
-            indent = floor(abs(len(record) - width)/2)
-
-            if len(record) % 2 != 0:
-                cf = 1
-            else:
-                cf = 0
-
-            filename = f" {' ' * indent}{record}{' ' * (indent + cf)} "
-            return filename
-
-        # show progress with rich progress (advanced, part 2)
         with progress:
-            task_id = progress.add_task('Downloading...', filename='')
+            task_id = progress.add_task('Downloading...', filename=' ... ')
 
             async with semaphore, aiohttp.ClientSession() as session:
                 tasks = []
@@ -449,64 +477,39 @@ class Ljdl():
                     album['download_path'] = Path.joinpath(Path(self.download_path), Path(album_dir))
                     album_path = album['download_path']
                     if not Path.exists(album_path):
-                        Path.mkdir(album_path, parents=True)
+                        Path.mkdir(album_path, parents=True, exist_ok=True)
 
                     for record in album['records']:
                         url = album['records'][record]
-                        path = Path.joinpath(Path(album['download_path']), Path(record.replace(' ', '_')))
-                        filename = get_task_filename(record)
-                        tasks.append(asyncio.create_task(self._fetch_image(session, url, path, task_id, filename)))
+                        path = Path.joinpath(
+                            Path(album['download_path']),
+                            Path(record.replace(' ', '_'))
+                            )
+                        filename = self._get_task_filename(record)
+                        tasks.append(
+                            asyncio.create_task(
+                                self._fetch_image(session, url, path, task_id, filename)
+                                ))
 
-                # show progress with rich track
-                # progress = Progress(
-                #     TextColumn("[progress.description]{task.description}"),
-                #     BarColumn(),
-                #     "•",
-                #     TaskProgressColumn(),
-                #     "•",
-                #     MofNCompleteColumn(),
-                #     "•",
-                #     TextColumn("{task.fields[filename]}"),
-                #     "•",
-                #     TimeRemainingColumn(),
-                # )
-                # with progress:
-                #     for _ in progress.track(asyncio.as_completed(tasks), description='Downloading...', total=len(tasks)):
-                #         await _
-
-                # show progress with rich progress (advanced, part 3)
                 progress.update(task_id, total=len(tasks))
                 await asyncio.wait(tasks)
+
                 progress.update(task_id, description='Completed')
                 progress.update(task_id, filename='')
 
-            # do not show any progress
-            # await asyncio.wait(tasks)
-
-
-        # print(f'{self.colors.OK_GREEN}All Done.{self.colors.ENDC}')
 
 
 def main():
-    # ljdl = Ljdl(url=args.URL, path=args.directory)
+    ljdl = Ljdl(url=args.URL, path=args.directory)
 
-    url = 'https://dimarcello.livejournal.com/photo/album/520'
+    # url = 'https://dimarcello.livejournal.com/photo/album/520'
     # url = 'https://dimarcello.livejournal.com'
     # url = 'https://olivia-vi.livejournal.com'
-    path = 'N:\\PROJECTS\\MY\\lj-dl-img\\download'
+    # path = 'N:\\PROJECTS\\MY\\lj-dl-img\\download'
 
     timer_start = time.perf_counter()
-    ljdl = Ljdl(url=url, path=path)
-    # ljdl._get_cookies()
-    # asyncio.run(ljdl._get_cookies())
-    # asyncio.run(ljdl._get_records(session=object, album_id='499', limit=2337))
-    # asyncio.run(ljdl._get_albums())
-    # asyncio.run(ljdl._generate_job_list())
+    # ljdl = Ljdl(url=url, path=path)
     asyncio.run(ljdl.download_images())
-    # asyncio.run(ljdl._auth())
-    # ljdl._get_records(album_id=1683)
-    # asyncio.run(ljdl._get_html())
-    # asyncio.run(ljdl._get_auth_token())
     duration = time.perf_counter() - timer_start
     print(f'Execution time is: {duration:0.3f} seconds')
 
