@@ -1,3 +1,8 @@
 __pycache__
+assets
 backup
 download
+venv
+*.build
+*.onefile-build
+*.dist
