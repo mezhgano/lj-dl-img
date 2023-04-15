@@ -4,3 +4,4 @@ aiofiles==22.1.0
 aiohttp==3.8.4
 beautifulsoup4==4.11.2
 rich==13.3.3
+nuitka==1.5.6
