@@ -2,7 +2,5 @@ __pycache__
 assets
 backup
 download
+dist
 venv
-*.build
-*.onefile-build
-*.dist
