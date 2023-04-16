@@ -22,15 +22,14 @@ def main() -> None:
     opts = sys.argv[1:]
 
     standalone = '--standalone' in opts
-    path = get_dist_path(standalone)
+    name, path = get_dist_path(standalone)
 
     if not standalone and '--onefile' not in opts:
-        opts.extend(('--onefile', f'--output-filename="{path}"'))
+        opts.extend(('--onefile', f'--output-filename={name}'))
 
     powershell_hook = get_powershell_alias() if OS_NAME == 'win32' else ''
 
     cache_dir = get_cache_dir()
-    # version_suffix = MACHINE and f'_{MACHINE}'
 
     print(f"Building lj-dl-img v{VERSION} for {OS_NAME}{'_'.join((MACHINE,))} with options:\n{opts}\n")
     print(f'Build destination:\n{path}\n')
@@ -40,14 +39,15 @@ def main() -> None:
         f'{get_python_alias()}',
         '-m',
         'nuitka',
-        f'--onefile-tempdir-spec="{cache_dir}"',
-        f'{icon_option[OS_NAME]}="{Path("assets/lj_icon_test.ico")}"',
-        f'--company-name="https://github.com/mezhgano/lj-dl-img"',
-        f'--product-version="{VERSION}"',
-        '--file-description="Download Livejournal photo albums"',
-        f'--copyright="dmitrymeshkoff@gmail.com | UNLICENSE"',
+        f'--onefile-tempdir-spec={cache_dir}',
+        f'{icon_option[OS_NAME]}={Path("assets/icon_final.svg")}',
+        f'--company-name=https://github.com/mezhgano/lj-dl-img',
+        f'--product-version={VERSION}',
+        '--file-description=Download Livejournal photo albums',
+        '--copyright=dmitrymeshkoff@gmail.com | UNLICENSE',
         #Automatically download external code, otherwise it will not possible to complete subprocess run
         '--assume-yes-for-downloads',
+        f'--output-dir={path}',
         *opts,
         'lj_dl_img.py'
         #Redirect input from null to disable prompt asking to download anything
@@ -55,7 +55,7 @@ def main() -> None:
     ]
 
     print(f'Running Nuitka with options:\n{cmd}\n')
-    # run_nuitka(cmd)
+    run_nuitka(cmd)
 
 
 def get_cache_dir() -> Path:
@@ -64,15 +64,17 @@ def get_cache_dir() -> Path:
         top_dir = '%localappdata%/Temp'
     else:
         top_dir = '%CACHE_DIR%'
+    path = Path(f'{top_dir}/dmitrymeshkoff/lj-dl-img/{VERSION}')
 
-    return Path(f'{top_dir}/dmitrymeshkoff/lj-dl-img/{VERSION}')
+    return path
 
 
 def get_dist_path(standalone: bool) -> Path:
     'Return tuple with executable name and relative path.'
     name = '_'.join(filter(None, ('lj-dl-img', {'win32': '', 'darwin': 'macos'}.get(OS_NAME, OS_NAME), MACHINE,)))
-    path = ''.join(filter(None, ('dist/', standalone and f'{name}/', name, OS_NAME == 'win32' and '.exe')))
-    return Path(path)
+    # path = ''.join(filter(None, ('dist/', standalone and f'{name}/', name, OS_NAME == 'win32' and '.exe')))
+    path = Path(f'dist/{name}')
+    return name, path
 
 
 def get_powershell_alias() -> tuple | str:
