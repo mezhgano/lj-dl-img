@@ -16,6 +16,21 @@ icon_option = {
     'linux': '--linux-icon'
 }
 
+icon_option = {
+    'win32': {
+        'cmd': '--windows-icon-from-ico',
+        'path': 'assets/lj_icon_test.ico'
+        },
+    'darwin': {
+        'cmd': '--macos-app-icon',
+        'path': 'assets/lj_icon_test.ico'
+        },
+    'linux': {
+        'cmd': '--linux-icon',
+        'path': 'assets/Artboard 1.png'
+        }
+}
+
 
 def main() -> None:
     'Build full command list and run build process.'
@@ -44,7 +59,7 @@ def main() -> None:
         f'--company-name=https://github.com/mezhgano/lj-dl-img',
         f'--product-version={VERSION}',
         '--file-description=Download Livejournal photo albums',
-        '--copyright=dmitrymeshkoff@gmail.com | UNLICENSE',
+        '--copyright="dmitrymeshkoff@gmail.com | UNLICENSE"',
         #Automatically download external code, otherwise it will not possible to complete subprocess run
         '--assume-yes-for-downloads',
         f'--output-dir={path}',
@@ -55,7 +70,7 @@ def main() -> None:
     ]
 
     print(f'Running Nuitka with options:\n{cmd}\n')
-    run_nuitka(cmd)
+    # run_nuitka(cmd)
 
 
 def get_cache_dir() -> Path:
@@ -69,11 +84,12 @@ def get_cache_dir() -> Path:
     return path
 
 
-def get_dist_path(standalone: bool) -> Path:
+def get_dist_path(standalone: bool) -> tuple:
     'Return tuple with executable name and relative path.'
-    name = '_'.join(filter(None, ('lj-dl-img', {'win32': '', 'darwin': 'macos'}.get(OS_NAME, OS_NAME), MACHINE,)))
-    # path = ''.join(filter(None, ('dist/', standalone and f'{name}/', name, OS_NAME == 'win32' and '.exe')))
+    name = '_'.join(filter(None, ('lj-dl-img', {'win32': '', 'darwin': 'macos'}.get(OS_NAME, OS_NAME), MACHINE)))
     path = Path(f'dist/{name}')
+    name = ''.join(filter(None, (name, OS_NAME == 'win32' and '.exe')))
+
     return name, path
 
 
@@ -88,7 +104,7 @@ def get_powershell_alias() -> tuple | str:
         # and let subprocess run cmd.exe
         return ''
 
-def get_python_alias():
+def get_python_alias() -> str:
     'Return python alias if found in system path.'
     for alias in ('py', 'python'):
         path = shutil.which(alias)
