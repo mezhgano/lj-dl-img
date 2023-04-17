@@ -8,12 +8,12 @@
 With it you can download all albums of user with just few clicks.
 
 * [INSTALLATION](#installation)
-    *[Windows](#windows)
-    *[Linux](#linux)
-    *[macOS](#macOS)
+    * [Windows](#windows)
+    * [Linux](#linux)
+    * [macOS](#macos)
 * [USAGE](#usage)
     * [Options](#options)
-    * [URL](#URL)
+    * [URL](#url)
 * [NOTES](#notes)
 * [TODO](#todo)
 
