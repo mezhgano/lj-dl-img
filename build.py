@@ -10,27 +10,6 @@ OS_NAME, MACHINE, ARCH = sys.platform, platform.machine().lower(), platform.arch
 if MACHINE in ('x86', 'x86_64', 'amd64', 'i386', 'i686'):
     MACHINE = 'x86' if ARCH == '32' else ''
 
-icon_option = {
-    'win32': '--windows-icon-from-ico',
-    'darwin': '--macos-app-icon',
-    'linux': '--linux-icon'
-}
-
-icon_option = {
-    'win32': {
-        'cmd': '--windows-icon-from-ico',
-        'path': 'assets/lj_icon_test.ico'
-        },
-    'darwin': {
-        'cmd': '--macos-app-icon',
-        'path': 'assets/lj_icon_test.ico'
-        },
-    'linux': {
-        'cmd': '--linux-icon',
-        'path': 'assets/Artboard 1.png'
-        }
-}
-
 
 def main() -> None:
     'Build full command list and run build process.'
@@ -44,42 +23,35 @@ def main() -> None:
 
     powershell_hook = get_powershell_alias() if OS_NAME == 'win32' else ''
 
-    cache_dir = get_cache_dir()
-
     print(f"Building lj-dl-img v{VERSION} for {OS_NAME}{'_'.join((MACHINE,))} with options:\n{opts}\n")
     print(f'Build destination:\n{path}\n')
 
     cmd = [
         *powershell_hook,
-        f'{get_python_alias()}',
+        get_python_alias(),
         '-m',
         'nuitka',
-        f'--onefile-tempdir-spec={cache_dir}',
-        f'{icon_option[OS_NAME]}={Path("assets/icon_final.svg")}',
-        f'--company-name=https://github.com/mezhgano/lj-dl-img',
+        f'--onefile-tempdir-spec={get_cache_dir()}',
+        f'--windows-icon-from-ico={Path("assets/logo.ico")}',
+        '--company-name=https://github.com/mezhgano/lj-dl-img',
         f'--product-version={VERSION}',
-        '--file-description=Download Livejournal photo albums',
+        '--file-description="Download Livejournal photo albums"',
         '--copyright="dmitrymeshkoff@gmail.com | UNLICENSE"',
-        #Automatically download external code, otherwise it will not possible to complete subprocess run
-        '--assume-yes-for-downloads',
         f'--output-dir={path}',
         *opts,
         'lj_dl_img.py'
-        #Redirect input from null to disable prompt asking to download anything
-        # '<NUL:'
     ]
 
     print(f'Running Nuitka with options:\n{cmd}\n')
-    # run_nuitka(cmd)
+    run_nuitka(cmd)
 
 
-def get_cache_dir() -> Path:
-    'Change default cache directory on Windows, return cache Path object.'
-    if OS_NAME == 'win32':
-        top_dir = '%localappdata%/Temp'
-    else:
-        top_dir = '%CACHE_DIR%'
-    path = Path(f'{top_dir}/dmitrymeshkoff/lj-dl-img/{VERSION}')
+def get_cache_dir() -> str:
+    '''
+    Return Path object with cache path populated with single version number.\n
+    Using this instead nuitka %VERSION% token wich is combination of --file-version & --product-version.
+    '''
+    path = Path(f'%CACHE_DIR%/dmitrymeshkoff/lj-dl-img/{VERSION}')
 
     return path
 
@@ -98,11 +70,14 @@ def get_powershell_alias() -> tuple | str:
     for alias in ('pwsh', 'powershell'):
         path = shutil.which(alias)
         if path:
+            # Uncomment to pass a null input if Nuitka will asking to download something.
+            # return (alias, '-NoProfile', '-Command', '"$null" |')
             return (alias, '-NoProfile', '-Command')
     else:
-        # if powershell not found in path pass empty string
-        # and let subprocess run cmd.exe
+        # if not found pass empty string, this will lead to
+        # subprocess run executable directly
         return ''
+
 
 def get_python_alias() -> str:
     'Return python alias if found in system path.'
@@ -125,55 +100,6 @@ def run_nuitka(cmd: list) -> None:
         if not line:
             break
         print(line.strip())
-
-
-
-
-# process = subprocess.Popen(['py', 'test.py'],
-#                            stdout=subprocess.PIPE,
-#                            universal_newlines=True)
-
-# cmd_list = ['powershell', '-NoProfile', 'py', 'sandbox.py']
-
-# process = subprocess.Popen(cmd_list,
-#                            stdout=subprocess.PIPE,
-#                            bufsize=1,
-#                            text=True
-#                            )
-
-# process = subprocess.Popen(['dir'],
-#                            executable='cmd.exe',
-#                            stdout=subprocess.PIPE,
-#                            universal_newlines=True)
-
-
-# print(shutil.which('powershell'))
-# print(shutil.which('cmd'))
-# print(shutil.which('pwsh'))
-
-
-
-# while True:
-#     line = process.stdout.readline()
-#     if not line:
-#         break
-#     print(line.strip())
-
-# while line:= process.stdout.readline():
-#     print(line.strip())
-
-
-# while True:
-#     output = process.stdout.readline()
-#     print(output.strip())
-#     # Do something else
-#     return_code = process.poll()
-#     if return_code is not None:
-#         print('RETURN CODE', return_code)
-#         # Process has finished, read rest of the output
-#         for output in process.stdout.readlines():
-#             print(output.strip())
-#         break
 
 
 if __name__ == '__main__':
