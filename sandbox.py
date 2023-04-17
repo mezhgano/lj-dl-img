@@ -1,4 +1,6 @@
 
+import os
+import pathlib
 import platform
 import shutil
 import subprocess
@@ -178,7 +180,16 @@ def run_nuitka(cmd: list) -> None:
 
 # print(get_win_shell())
 # print(get_python_path())
-run_nuitka(cmd)
+# run_nuitka(cmd)
+
+print(os.path.abspath(__file__))
+
+cwd = Path().absolute()
+path = Path.joinpath(Path().absolute(), 'download')
+
+print(path)
+
+
 
 # print(shutil.which('cmd'))
 
