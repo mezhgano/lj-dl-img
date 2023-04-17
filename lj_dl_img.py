@@ -2,10 +2,8 @@ import argparse
 import asyncio
 import json
 import os
-import random
 import re
 import sys
-import time
 from math import floor
 from pathlib import Path
 from typing import List, Optional, Sequence
@@ -89,8 +87,6 @@ class Ljdl():
         self.url_parse = self._validate_url(url)
         self.goal_is_multiple = self._goal_is_multiple()
         self.download_path = self._set_download_path(path)
-        # import backup uas for testing
-        # self.user_agent = random.choice(UAS_BACKUP)
         self.user_agent = Ua.random()
         self.username = self._get_username()
         self.cookies = None
@@ -416,6 +412,7 @@ class Ljdl():
         async with session.get(url) as response:
             assert response.status == 200, f'{self.error_mark} {RESPONSE_NOT_200}'
             data = await response.read()
+            # Debug
             # sleep for rich progress tweaking
             # sleep(0.2)
 
@@ -501,17 +498,7 @@ class Ljdl():
 
 def main():
     ljdl = Ljdl(url=args.URL, path=args.directory)
-
-    # url = 'https://dimarcello.livejournal.com/photo/album/520'
-    # url = 'https://dimarcello.livejournal.com'
-    # url = 'https://olivia-vi.livejournal.com'
-    # path = 'N:\\PROJECTS\\MY\\lj-dl-img\\download'
-
-    timer_start = time.perf_counter()
-    # ljdl = Ljdl(url=url, path=path)
     asyncio.run(ljdl.download_images())
-    duration = time.perf_counter() - timer_start
-    print(f'Execution time is: {duration:0.3f} seconds')
 
 
 if __name__ == '__main__':
