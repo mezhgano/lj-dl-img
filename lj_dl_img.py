@@ -21,8 +21,8 @@ from constants import (RESPONSE_NOT_200, UAS_BACKUP, URL_API, URL_AUTH,
 from user_agents import Ua
 
 parser = argparse.ArgumentParser(
-    description='LJDL - Script for downloading Livejournal photo albums.\n\n'
-                'Usage: py ljdl.py [OPTIONS] [URL]',
+    description='LJDL - Download image albums from livejournal.com.\n\n'
+                'Usage: lj-dl-img [OPTIONS] [URL]',
     formatter_class=argparse.RawTextHelpFormatter,
     add_help=False
     )
@@ -31,8 +31,8 @@ parser.add_argument(
     'URL',
     type=str,
     help='URL of Livejournal user or certain album to download. For example, specify: \n'
-         'https://dimarcello.livejournal.com - to download all avaliable albums.\n'
-         'https://dimarcello.livejournal.com/photo/album/1337 - to download just one certain album.\n\n'
+         'https://username.livejournal.com - to download all avaliable albums.\n'
+         'https://username.livejournal.com/photo/album/1337 - to download just one certain album.\n\n'
     )
 
 parser.add_argument(
