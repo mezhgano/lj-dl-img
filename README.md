@@ -5,6 +5,7 @@
 </div>
 
 **lj-dl-img** is a parser for downloading image albums from [Livejournal.com](https://www.livejournal.com/).
+
 With it you can download all albums of user with just few clicks.
 
 * [INSTALLATION](#installation)
@@ -54,6 +55,7 @@ lj-dl-img https://dimarcello.livejournal.com/photo/album/1683/
 For now only Windows and Linux binaries are avaliable, i don't have Mac to compile it.
 
 You can clone this repository and run `lj_dl_img.py`.
+
 (You will need Python installed for this, i'm using 3.10.10):
 ```
 git clone https://github.com/mezhgano/lj-dl-img.git
