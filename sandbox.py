@@ -1,104 +1,191 @@
-import json
-import os
+
+import platform
+import shutil
+import subprocess
 import sys
-import time
-from math import floor
 from pathlib import Path
-from typing import Optional
+from time import sleep
 
-from constants import TermColors
+from rich.progress import track
 
+OS_NAME = 'win32'
+ARCH = platform.architecture()[0][:2]
+# test_list = ['a', 'b', 'c']
+# powershell = ['powershell', '-NoProfile'] if OS_NAME == 'win32' else ''
+# new_list = [*powershell, *test_list]
 
-def test_cycle():
-  with open('..\\LJ_Parser\\json\\job_list_test_records_v2.json', encoding='UTF-8') as file:
-    job_list_json = json.load(file)
-  #n must be even number, otherwise right bracket will shaking.
-  width = 22
-  cf = 0
-  for album in job_list_json['albums']:
-    for record in album['records']:
-
-      # record = record[:width]
-      record = record.split('__', 1)[1][:width]
-      if len(record) == width:
-        record = record[:-3] + '...'
-
-      indent = floor(abs(len(record) - width)/2)
-      # indent = round(abs(len(record) - width)/2)
-
-      if len(record) % 2 != 0:
-        cf = 1
-      else:
-        cf = 0
-      # cf = 0
-      filename = f"( {' ' * indent}{record}{' ' * (indent + cf)} )"
-      print(filename, end='\r')
-      time.sleep(0.2)
-      sys.stdout.write("\033[K")
-
-# test_cycle()
+# print(new_list)
 
 
-colors = TermColors
-
-error_mark = f'{colors.FAIL}●{colors.ENDC}'
-
-def _exit(message: str, status: int = 0):
-    'Gracefully exit with status code and message to stderr.'
-    if status != 0:
-        sys.stderr.write(f'{error_mark} {message}')
-    raise SystemExit(status)
-
-
-def _set_download_path(path: Optional[str] = None) -> Path:
-    if not path:
-        download_path = Path.cwd().resolve()
+def get_win_shell() -> tuple | str:
+    for alias in ('pwsh', 'powershell'):
+        path = shutil.which(alias)
+        if path:
+            # return (alias, '-NoProfile', '-Command')
+            return (alias, '-NoProfile', '-Command', '"$null" |')
     else:
-        _path = Path(path)
-        message = ('Given path is not {reason}.\n'
-                    'Please specify different path or not specify path at all '
-                    'to download to current directory.')
-        if not Path.exists(_path):
-            _exit(message.format(reason = 'exist'), 1)
-        elif not Path.is_dir(_path):
-            _exit(message.format(reason = 'a folder'), 1)
-        elif not os.access(_path, os.W_OK):
-            _exit(message.format(reason = 'writable'), 1)
-        else:
-            download_path = _path
+        return ''
 
-    return download_path
+# shells = ('pwsh', 'powershell', 'cmd')
+# path = get_win_shell()
+
+# if any(shell in path for shell in shells[0:2]):
+#     print('Got it')
+# def get_win_shell() -> str:
+#     shells = ('pwsh', 'powershell', 'cmd')
+#     count = 0
+#     for shell in shells:
+#         path = shutil.which(shell)
+#         count += 1
+#         if path in any(shells[0:2]):
+#             return [path, '-NoProfile']
+#         else:
+#             return [path]
+
+# def get_win_shell() -> str:
+#     shells = ('pwshz', 'powershell', 'cmd')
+#     for shell in shells:
+#         path = shutil.which(shell)
+#         if any(shell in path for shell in shells[0:2]):
+#         # if any(path in shell for shell in shells[0:2]):
+#             return [path, '-NoProfile']
+#         else:
+#             return [path]
+
+win_shell_hook = get_win_shell() if OS_NAME == 'win32' else ''
+# print(win_shell_hook)
+# exit()
+# assert win_shell_hook != None
+
+# cmd_list = [
+#     *win_shell_hook,
+#     'py',
+#     '-m',
+#     'nuitka',
+# ]
+# print(get_win_shell())
+
+# print(cmd_list)
+
+
+def get_python_alias():
+    for alias in ('py', 'python'):
+        path = shutil.which(alias)
+        if path:
+            return alias
+    else:
+        raise FileNotFoundError('Can\'t find python path, exiting.')
+
+# print(get_python_path())
+
+# test_list = ['a', 'b', 'c']
+
+
+# test_list.extend(('d', 'e'))
+
+# print(test_list)
+
+
+# print(test_func())
+
+# test_parse()
+
+# test_tuple = ('a', 'b', 'c')
+
+# print(test_tuple[0:2])
 
 
 
-def _set_download_path_v2(path: Optional[str] = None) -> Path:
-  if not path:
-    download_path = Path.cwd().resolve()
 
-  else:
-    download_path = Path(download_path)
-    message = ('Given path is not {reason}'
-               'Please specify different path or not specify path at all '
-               'to download to current directory.')
-
-    if not download_path.exists():
-      try:
-        download_path.mkdir(parents=True)
-      except Exception as e:
-        _exit(message.format(reason = f'created. Exception: {e}\n\n'), 1)
-
-    if not download_path.is_dir():
-      _exit(message.format(reason = 'a folder.\n'), 1)
-    if not os.access(download_path, os.W_OK):
-      _exit(message.format(reason = 'writable.\n'), 1)
-
-  return download_path
+# n = 0
+# for n in range(20):
+#     n += 1
+#     sleep(0.5)
+#     print(n)
 
 
-given_path = 'C:\\Users\\dmitry\\OMG'
-# given_path = 'C:\\Users\\dmitry\\zzz\\rrrr.txt'
-# given_path = 'C:\\Users\\mejga\\AppData'
-# given_path = 'C:\\Windows\\System32'
+# user_input = input('Enter anything:\n')
 
-# print(_set_download_path(given_path))
-print(_set_download_path_v2(given_path))
+# if not user_input:
+#     print('You have entered nothing')
+# else:
+#     print('You have entered:', user_input)
+
+# for i in track(range(20)):
+#     sleep(0.2)
+
+cmd = [
+    f'{get_python_alias()}',
+    '-m',
+    'nuitka'
+]
+
+cmd = [
+    'py',
+]
+
+cmd = [
+    'pwsh',
+    '-NoProfile',
+    '-Command',
+    'py'
+    # '&',
+    # f'.{get_python_path()}',
+    # '-m',
+    # 'nuitka'
+]
+
+cmd = [
+    'cmd'
+    'py'
+]
+
+cmd = [
+    *win_shell_hook,
+    # 'py',
+    f'{get_python_alias()}',
+    '-m',
+    # 'pip',
+    # 'list'
+    'nuitka'
+]
+
+cmd = [
+    *win_shell_hook,
+    # 'py',
+    f'{get_python_alias()}',
+    'test.py'
+]
+
+# check = subprocess.check_output(cmd, encoding='utf-8', timeout=3)
+# print(check)
+
+
+def run_nuitka(cmd: list) -> None:
+    'Run nuitka build in subprocess and print output.'
+    process = subprocess.Popen(cmd,
+                            #    executable='pwsh',
+                            #    executable='C:\\Program Files\\PowerShell\\7\\pwsh.EXE',
+                               stdout=subprocess.PIPE,
+                               bufsize=1,
+                            #    shell=True,
+                               text=True)
+    while True:
+        line = process.stdout.readline()
+        if not line:
+            break
+        print(line.strip())
+
+# print(get_win_shell())
+# print(get_python_path())
+run_nuitka(cmd)
+
+# print(shutil.which('cmd'))
+
+# Path.mkdir(Path('%localappdata%/Temp/dmitrymeshkoff/lj-dl-img/2023.03.27'))
+
+# path = r'%localappdata%/Temp/dmitrymeshkoff/lj-dl-img/2023.03.27'
+
+# print(path)
+
+# path.mkdir(parents=True)
