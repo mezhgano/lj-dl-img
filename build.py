@@ -46,7 +46,7 @@ def main() -> None:
     run_nuitka(cmd)
 
 
-def get_cache_dir() -> str:
+def get_cache_dir() -> Path:
     '''
     Return Path object with cache path populated with single version number.\n
     Using this instead nuitka %VERSION% token wich is combination of --file-version & --product-version.
