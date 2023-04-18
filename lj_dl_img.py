@@ -412,9 +412,6 @@ class Ljdl():
         async with session.get(url) as response:
             assert response.status == 200, f'{self.error_mark} {RESPONSE_NOT_200}'
             data = await response.read()
-            # Debug
-            # sleep for rich progress tweaking
-            # sleep(0.2)
 
         async with aiofiles.open(path, 'wb') as file:
             await file.write(data)
