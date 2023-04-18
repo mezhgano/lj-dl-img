@@ -87,11 +87,12 @@ lj-dl-img [-h] [-v] [-d] URL
 
 # NOTES
 * For now only downloading public images available, all private images will be ignored.<br>
-I'm planning to add a feature in future releases to use a cookies to download all images, regardless of private settings.
+I'm planning to add a feature in future releases to use a cookies to download all images from your user, regardless of private settings.
 
 
 # TODO
 
+- [ ] Write additional README in Russian
 - [ ] Add option to pass cookies (for downloading private images)
 - [ ] Compile binary for macOS (i don't have mac, so any help apperticed)
 - [ ] Add option to download video albums
