@@ -26,8 +26,8 @@ Download user albums in just few clicks.
 
 File|Description
 :---|:---
-[lj-dl-img](https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp)|For **Linux/BSD**
-[lj-dl-img.exe](https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe)|For **Windows**
+[lj-dl-img.exe](https://github.com/mezhgano/lj-dl-img/releases/latest/download/lj-dl-img.exe)|For **Windows**
+[lj-dl-img](https://github.com/mezhgano/lj-dl-img/releases/latest/download/lj-dl-img_linux)|For **Linux/BSD**
 
 ## Windows
 Download binary, add it to System Path and execute following in terminal:
