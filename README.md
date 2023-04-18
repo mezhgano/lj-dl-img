@@ -47,8 +47,8 @@ If you don't want to setting up System Path just call it directly:
 ## Linux
 Download binary, copy it to folder in System Path, mark the file as executable.<br> To do so execute following in terminal:
 ```
-cp lj-dl-img //usr/bin/
-chmod u+x //usr/bin/lj-dl-img
+sudo mv lj-dl-img_linux /usr/local/bin/lj-dl-img
+chmod u+x //usr/local/bin/lj-dl-img
 lj-dl-img https://username.livejournal.com
 ```
 
